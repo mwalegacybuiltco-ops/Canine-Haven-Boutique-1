@@ -45,4 +45,15 @@ function route(){
 }
 
 window.addEventListener("hashchange", route);
+window.addEventListener("hashchange", route);
+
+// FORCE LOGIN FIRST (must happen BEFORE first route())
+if (!location.hash || location.hash === "#/" || location.hash === "#") {
+  location.hash = "#/login";
+} else {
+  route();
+}
+
+// If we changed the hash to #/login, the hashchange event will call route()
+
 route();
