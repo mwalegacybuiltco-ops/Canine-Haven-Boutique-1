@@ -191,6 +191,14 @@ function communityView(){
 
 export function render(path, params){
   saveRefFromUrl();
+
+  const role = localStorage.getItem("role") || "";
+
+  const affiliateOnly = ["/affiliate","/start-here","/training","/four-corners","/team","/payouts","/stats"];
+  if (affiliateOnly.includes(path) && role !== "affiliate"){
+    return loginView(); // or return shopView(params);
+  }
+
   switch(path){
     case "/login": return loginView();
     case "/shop": return shopView(params);
@@ -207,6 +215,7 @@ export function render(path, params){
     default: return shopView(params);
   }
 }
+
 
 export function afterRender(path){
   const topbar = document.getElementById("topbar");
