@@ -76,3 +76,4 @@ if (!location.hash || location.hash === "#/" || location.hash === "#") {
 
 window.addEventListener("hashchange", route);
 route();
+
