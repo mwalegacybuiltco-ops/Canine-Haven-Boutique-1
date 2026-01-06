@@ -217,7 +217,8 @@ export function afterRender(path){
     el.addEventListener("click", ()=>{
       const mode = el.getAttribute("data-login");
       if (mode === "customer") localStorage.setItem("role","customer");
-      if (mode === "affiliate") localStorage.setItem("role","affiliate");
+      if (mode === "affiliate") location.hash = "#/affiliate";
+
       if (mode === "shop") location.hash = "#/shop";
       if (mode === "customer") location.hash = "#/join";
       if (mode === "affiliate") location.hash = "#/join";
