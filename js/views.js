@@ -226,17 +226,29 @@ export function afterRender(path){
     });
   });
 
-  document.querySelectorAll("[data-join]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const which = btn.getAttribute("data-join");
-      if (which === "customer") localStorage.setItem("role","customer");
-      if (which === "affiliate") localStorage.setItem("role","affiliate");
-      const host = document.getElementById("joinFormHost");
-      if (!host) return;
-      host.innerHTML = iframeEmbed(which === "customer" ? CONFIG.customerFormEmbedUrl : CONFIG.affiliateFormEmbedUrl);
-      host.scrollIntoView({behavior:"smooth", block:"start"});
+    document.querySelectorAll("[data-login]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const mode = el.getAttribute("data-login");
+
+      if (mode === "shop"){
+        location.hash = "#/shop";
+        return;
+      }
+
+      if (mode === "customer"){
+        localStorage.setItem("role","customer");
+        location.hash = "#/join";
+        return;
+      }
+
+      if (mode === "affiliate"){
+        localStorage.setItem("role","affiliate");
+        location.hash = "#/join";   // send them to affiliate form on Join
+        return;
+      }
     });
   });
+
 
   document.querySelectorAll("[data-buy]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
