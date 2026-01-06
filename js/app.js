@@ -1,59 +1,78 @@
-import { renderHome, renderJoin, renderStats } from "./routes.js";
+import { parseHash, saveRefFromUrl } from "./utils.js";
+import { render, afterRender } from "./views.js";
 
 const view = document.getElementById("view");
 const sidebar = document.getElementById("sidebar");
 const backdrop = document.getElementById("backdrop");
 const menuBtn = document.getElementById("menuBtn");
 const closeMenuBtn = document.getElementById("closeMenuBtn");
-const installBtn = document.getElementById("installBtn");
 
-function openMenu(){ sidebar.classList.add("open"); backdrop.classList.remove("hidden"); }
-function closeMenu(){ sidebar.classList.remove("open"); backdrop.classList.add("hidden"); }
+function closeSidebar(){
+  sidebar?.classList.remove("open");
+  backdrop?.classList.add("hidden");
+}
+function openSidebar(){
+  sidebar?.classList.add("open");
+  backdrop?.classList.remove("hidden");
+}
 
-menuBtn?.addEventListener("click", openMenu);
-closeMenuBtn?.addEventListener("click", closeMenu);
-backdrop?.addEventListener("click", closeMenu);
-document.querySelectorAll(".sidelink").forEach(a=>a.addEventListener("click", closeMenu));
+menuBtn?.addEventListener("click", openSidebar);
+closeMenuBtn?.addEventListener("click", closeSidebar);
+backdrop?.addEventListener("click", closeSidebar);
 
-// PWA install prompt
-let deferredPrompt = null;
-window.addEventListener("beforeinstallprompt", (e)=>{
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.classList.remove("hidden");
-});
-installBtn?.addEventListener("click", async ()=>{
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.classList.add("hidden");
-});
+// Close menu when clicking any sidebar link
+document.querySelectorAll(".sidelink").forEach(a => a.addEventListener("click", closeSidebar));
 
-// Service worker
-if ("serviceWorker" in navigator){
-  window.addEventListener("load", ()=>{
-    navigator.serviceWorker.register("./sw.js").catch(()=>{});
-  });
+/** Affiliate-only routes */
+const AFFILIATE_ROUTES = new Set([
+  "/affiliate",
+  "/start-here",
+  "/training",
+  "/four-corners",
+  "/team",
+  "/payouts",
+  "/stats",
+]);
+
+function applyRoleVisibility(){
+  const role = localStorage.getItem("role") || "";
+  const affiliateMenu = document.getElementById("affiliateMenu");
+  if (affiliateMenu) affiliateMenu.style.display = role === "affiliate" ? "" : "none";
+}
+
+function enforceAccess(path){
+  // Always allow login + shop + join + starterpack + community
+  if (path === "/login" || path === "/shop" || path === "/join" || path === "/starterpack" || path === "/community") return true;
+
+  const role = localStorage.getItem("role") || "";
+  if (AFFILIATE_ROUTES.has(path) && role !== "affiliate") {
+    // Not an affiliate? Kick them to login.
+    location.hash = "#/login";
+    return false;
+  }
+  return true;
 }
 
 function route(){
-  const hash = window.location.hash || "#/";
-  if (hash.startsWith("#/join")) return renderJoin(view);
-  if (hash.startsWith("#/stats")) return renderStats(view);
-  return renderHome(view);
+  saveRefFromUrl();
+
+  const { path, params } = parseHash();
+
+  // Guard first
+  if (!enforceAccess(path)) return;
+
+  // Render
+  view.innerHTML = render(path, params);
+  afterRender(path);
+
+  // Apply menu visibility AFTER render
+  applyRoleVisibility();
 }
 
-window.addEventListener("hashchange", route);
-window.addEventListener("hashchange", route);
-
-// FORCE LOGIN FIRST (must happen BEFORE first route())
+// ✅ Force login on first load
 if (!location.hash || location.hash === "#/" || location.hash === "#") {
   location.hash = "#/login";
-} else {
-  route();
 }
 
-// If we changed the hash to #/login, the hashchange event will call route()
-
+window.addEventListener("hashchange", route);
 route();
