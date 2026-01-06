@@ -106,6 +106,16 @@ a{color:inherit}
   #menuBtn{display:none}
   #closeMenuBtn{display:none}
 }
+.loginWrap{ position:relative; width:min(420px, 100%); }
+.loginImg{ width:100%; height:auto; display:block; position:relative; z-index:1; }
+
+.hotspot{
+  position:absolute;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  z-index:5;        /* <-- THIS makes buttons clickable */
+}
 
 /* LOGIN OVERLAY */
 .loginScreen{
